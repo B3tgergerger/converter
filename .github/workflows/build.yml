@@ -1,32 +1,39 @@
-name: Build and Package
+name: Build EXE
 
-on: [push]
+on:
+  push:
+    branches:
+      - main
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+    - name: Checkout repository
+      uses: actions/checkout@v4
 
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v5
       with:
         python-version: '3.x'
 
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
-        pip install ffmpeg-python PyInstaller
+        pip install pyinstaller
 
-    - name: Package using PyInstaller
+    - name: Build executable
       run: |
         pyinstaller --onefile --noconsole converter.py
+
+    - name: Copy FFmpeg
+      run: |
         cp ffmpeg.exe dist/
 
-    - name: Upload artifact
-      uses: actions/upload-artifact@v2
+    - name: Upload executable and FFmpeg
+      uses: actions/upload-artifact@v4
       with:
-        name: converter
-        path: dist/
+        name: converter-exe
+        path: |
+          dist/converter.exe
+          dist/ffmpeg.exe
