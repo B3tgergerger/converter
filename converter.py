@@ -6,6 +6,9 @@ import threading
 import json
 import os
 
+# تعيين المسار إلى ffmpeg المضمن
+ffmpeg_path = os.path.join(os.path.dirname(__file__), 'ffmpeg.exe')
+
 # دالة لاختيار ملفات الإدخال
 def select_files():
     file_paths = filedialog.askopenfilenames(filetypes=[("Audio/Video Files", "*.mp3 *.wav *.flac *.m4a *.mp4 *.avi *.mkv *.mov")])
@@ -28,7 +31,7 @@ def convert_files():
 
     if not bitrate:
         bitrate = '320k'
-
+    
     progress_bar['value'] = 0
     progress_bar['maximum'] = len(input_files)
 
@@ -36,7 +39,7 @@ def convert_files():
         for i, input_file in enumerate(input_files):
             output_file = f"{output_dir}/{os.path.basename(input_file).split('.')[0]}.{selected_format}"
             try:
-                stream = ffmpeg.input(input_file)
+                stream = ffmpeg.input(input_file, cmd=ffmpeg_path)
                 if selected_format in ['mp3', 'wav', 'flac', 'm4a']:
                     stream = ffmpeg.output(stream, output_file, audio_bitrate=bitrate)
                 else:
