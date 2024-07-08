@@ -1,39 +1,36 @@
-name: Build EXE
+name: Build and Package
 
-on:
-  push:
-    branches:
-      - main
+on: [push]
 
 jobs:
   build:
     runs-on: windows-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+    - uses: actions/checkout@v3
 
     - name: Set up Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v4
       with:
-        python-version: '3.x'
+        python-version: 3.9
 
     - name: Install dependencies
       run: |
         pip install pyinstaller
+        pip install ffmpeg-python
+
+    - name: Download ffmpeg
+      run: |
+        Invoke-WebRequest -Uri https://ffmpeg.org/releases/ffmpeg-release-essentials.zip -OutFile ffmpeg.zip
+        Expand-Archive -Path ffmpeg.zip -DestinationPath $env:USERPROFILE\ffmpeg
+        echo "$env:USERPROFILE\ffmpeg\bin" >> $env:GITHUB_PATH
 
     - name: Build executable
       run: |
         pyinstaller --onefile --noconsole converter.py
 
-    - name: Copy FFmpeg
-      run: |
-        cp ffmpeg.exe dist/
-
-    - name: Upload executable and FFmpeg
+    - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
         name: converter-exe
-        path: |
-          dist/converter.exe
-          dist/ffmpeg.exe
+        path: dist/converter.exe
